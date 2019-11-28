@@ -28,6 +28,9 @@ using Amazon.Polly;
 using Amazon;
 using Amazon.Polly.Model;
 using System.Net;
+using System.Net.Http.Headers;
+using System.Net.Http;
+using BABERECEN.Client.Authentications;
 
 namespace BABERECEN.Client.ViewModels
 {
@@ -46,6 +49,9 @@ namespace BABERECEN.Client.ViewModels
         private readonly string _fromUser = "BABE104";
 
         private readonly CompositeDisposable _compositeDisposable = new CompositeDisposable();
+
+        public static string requestUri = "https://westus.stt.speech.microsoft.com/speech/recognition/conversation/cognitiveservices/v1?language=en-US";
+        public static string subscriptionKey = "782a715164bd4d579e038746631e16a0";
 
         /// <summary>
         ///     클라이언트 상태를 주제로 하는 서브젝트
@@ -83,7 +89,10 @@ namespace BABERECEN.Client.ViewModels
         /// </summary>
         public MainViewModel()
         {
-            if (!DesignMode.DesignModeEnabled) Init();
+            //SpeechHelper speechHelper= new SpeechHelper();
+            //_speechHelper = speechHelper ?? throw new ArgumentNullException(nameof(speechHelper));
+
+            if (!DesignMode.DesignModeEnabled) Init();            
         }
 
         /// <summary>
@@ -129,12 +138,12 @@ namespace BABERECEN.Client.ViewModels
                        ?? SpeechRecognizer.SystemSpeechLanguage;
             await InitializeRecognizerAsync(enUS);
 
-            _threeSecondsObservable = Observable.Timer(TimeSpan.FromSeconds(3));
+            _threeSecondsObservable = System.Reactive.Linq.Observable.Timer(TimeSpan.FromSeconds(3));
 
             //상태 변경 이벤트 옵저블
             var stateChangingObservable =
-                Observable.FromEvent<EventHandler<ClientState>, ClientState>(h => (s, a) => h(a),
-                    h => ClientStateChanging += h, h => ClientStateChanging -= h);
+                System.Reactive.Linq.Observable.FromEvent<EventHandler<ClientState>, ClientState>((Action<ClientState> h) => (object s, ClientState a) => h(a),
+                    (EventHandler<ClientState> h) => ClientStateChanging += h, (EventHandler<ClientState> h) => ClientStateChanging -= h);
 
             stateChangingObservable
                 .Subscribe(_subject)
@@ -184,10 +193,6 @@ namespace BABERECEN.Client.ViewModels
                             break;
                         case ClientStates.PlaySystemVoice:
                             Debug.WriteLine($"PlaySystemVoice {DateTime.Now:O}");
-                            Dialogs.Add(new Activity
-                            {
-                                Text = $"[System Message] Play {state.Data}"
-                            });
 
                             break;
                         case ClientStates.StopSystemVoice:
@@ -270,12 +275,12 @@ namespace BABERECEN.Client.ViewModels
                 _speechRecognizer = new SpeechRecognizer(language);
 
                 //마이크 입력 인지
-                var stateChangedObservable = Observable
+                var stateChangedObservable = System.Reactive.Linq.Observable
                     .FromEvent<TypedEventHandler<SpeechRecognizer, SpeechRecognizerStateChangedEventArgs>,
                         SpeechRecognizerStateChangedEventArgs>(
-                        h => (sender, args) => h(args),
-                        h => _speechRecognizer.StateChanged += h,
-                        h => _speechRecognizer.StateChanged -= h);
+                        (Action<SpeechRecognizerStateChangedEventArgs> h) => (SpeechRecognizer sender, SpeechRecognizerStateChangedEventArgs args) => h(args),
+                        (TypedEventHandler<SpeechRecognizer, SpeechRecognizerStateChangedEventArgs> h) => _speechRecognizer.StateChanged += h,
+                        (TypedEventHandler<SpeechRecognizer, SpeechRecognizerStateChangedEventArgs> h) => _speechRecognizer.StateChanged -= h);
 
                 stateChangedObservable.Subscribe(s =>
                 {
@@ -303,13 +308,13 @@ namespace BABERECEN.Client.ViewModels
 
                 //윈도우 지원 음성 인식
                 var resultGeneratedObservable =
-                    Observable
+                    System.Reactive.Linq.Observable
                         .FromEvent<TypedEventHandler<SpeechContinuousRecognitionSession,
                                 SpeechContinuousRecognitionResultGeneratedEventArgs>,
                             SpeechContinuousRecognitionResultGeneratedEventArgs>(
-                            h => (sender, args) => h(args),
-                            h => _speechRecognizer.ContinuousRecognitionSession.ResultGenerated += h,
-                            h => _speechRecognizer.ContinuousRecognitionSession.ResultGenerated -= h);
+                            (Action<SpeechContinuousRecognitionResultGeneratedEventArgs> h) => (SpeechContinuousRecognitionSession sender, SpeechContinuousRecognitionResultGeneratedEventArgs args) => h(args),
+                            (TypedEventHandler<SpeechContinuousRecognitionSession, SpeechContinuousRecognitionResultGeneratedEventArgs> h) => _speechRecognizer.ContinuousRecognitionSession.ResultGenerated += h,
+                            (TypedEventHandler<SpeechContinuousRecognitionSession, SpeechContinuousRecognitionResultGeneratedEventArgs> h) => _speechRecognizer.ContinuousRecognitionSession.ResultGenerated -= h);
 
                 resultGeneratedObservable
                     .Where(args => !(args.Result.Confidence == SpeechRecognitionConfidence.Low
@@ -375,8 +380,7 @@ namespace BABERECEN.Client.ViewModels
             var activities = from x in activitySet.Activities
                              where x.From.Id == _botId
                              select x;
-            
-            foreach (var activity in activities) await ExecuteDispatcherRunAsync(() => Dialogs.Add(activity));
+
 
             //폴리 클라이언트 생성
             var pc = new AmazonPollyClient("AKIAI2VB7NBZUIALEPEA", "keKSzndXgNqMIG5CVXRImScjodyVgjRpf04B0zx9"
@@ -384,7 +388,7 @@ namespace BABERECEN.Client.ViewModels
 
             foreach (var activity in activities)
             {
-                await ExecuteDispatcherRunAsync(async() =>
+                await ExecuteDispatcherRunAsync(async () =>
                 {
                     //요청 생성
                     var sreq = new SynthesizeSpeechRequest
@@ -421,6 +425,10 @@ namespace BABERECEN.Client.ViewModels
                 });
             }
             //RandomAccessStream과 바인딩이 되어있는 MediaBehavior에서 MediaPlayer를 통해서 재생
+
+            foreach (var activity in activities) await ExecuteDispatcherRunAsync(() => Dialogs.Add(activity));
+
+            OnClientStateChanging(ClientStates.PlaySystemVoice);
         }
 
         /// <summary>
@@ -459,16 +467,56 @@ namespace BABERECEN.Client.ViewModels
                     ContentType = "audio/wav",
                     ContentUrl = $"data:audio/wav;base64,{fileData}"
                 };
+
+                
+                //음성파일 text로 변환
+                string requestUrl = requestUri;
+                HttpWebRequest request = (HttpWebRequest)HttpWebRequest.Create(requestUrl);
+                request.SendChunked = true;
+                request.Accept = @"application/json;text/xml";
+                request.Method = "POST";
+                request.ProtocolVersion = HttpVersion.Version11;
+                request.ContentType = @"audio/wav;codec=audio/pcm;samplerate=16000";
+                request.Headers["Ocp-Apim-Subscription-Key"] = subscriptionKey;
+                using (FileStream fs = new FileStream(filePath, FileMode.Open, FileAccess.Read))
+                {
+                    byte[] buffer = null;
+                    int bytesRead = 0;
+                    using (Stream requestStream = request.GetRequestStream())
+                    {
+                        buffer = new Byte[checked((uint)Math.Min(1024, (int)fs.Length))];
+                        while ((bytesRead = fs.Read(buffer, 0, buffer.Length)) != 0)
+                        {
+                            requestStream.Write(buffer, 0, bytesRead);
+                        }
+
+                        requestStream.Flush();
+                    }
+                }
+                string re = null;
+                using (HttpWebResponse response = (HttpWebResponse)request.GetResponse())
+                {
+                    using (StreamReader sr = new StreamReader(response.GetResponseStream()))
+                    {
+                        re = sr.ReadToEnd();
+                    }
+                }
+
+                dynamic data = JsonConvert.DeserializeObject(re);
+
                 userMessage.Attachments = new List<Attachment>
                 {
                     attachment
                 };
+                userMessage.Text = data.DisplayText;
+               
+
                 Dialogs.Add(userMessage);
                 await _botClient.Conversations.PostActivityAsync(_conversation.ConversationId, userMessage);
             }
             else
             {
-                Dialogs.Add(userMessage);
+                //Dialogs.Add(userMessage);
                 await _botClient.Conversations.PostActivityAsync(_conversation.ConversationId, userMessage);
             }
 
@@ -536,7 +584,7 @@ namespace BABERECEN.Client.ViewModels
             try
             {
                 RandomAccessStream = await file.OpenAsync(FileAccessMode.Read);
-                OnClientStateChanging(ClientStates.PlaySystemVoice, messageFileName);           
+                OnClientStateChanging(ClientStates.PlaySystemVoice, messageFileName);
             }
             catch (FileNotFoundException)
             {

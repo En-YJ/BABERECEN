@@ -125,6 +125,12 @@
     <PackageReference Include="Microsoft.Bot.Connector.DirectLine">
       <Version>3.0.2</Version>
     </PackageReference>
+    <PackageReference Include="Microsoft.Extensions.Configuration">
+      <Version>3.0.1</Version>
+    </PackageReference>
+    <PackageReference Include="Microsoft.Extensions.Http">
+      <Version>3.0.1</Version>
+    </PackageReference>
     <PackageReference Include="Microsoft.NETCore.UniversalWindowsPlatform">
       <Version>6.2.9</Version>
     </PackageReference>
@@ -146,10 +152,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Activation\ActivationHandler.cs" />
+    <Compile Include="Authentications\Authentication.cs" />
     <Compile Include="Behaviors\MdediaBehavior.cs" />
     <Compile Include="Helpers\AudioCapturePermissions.cs" />
     <Compile Include="Helpers\MicrophoneHelper.cs" />
-    <Compile Include="Helpers\BindableBase.cs" />
+    <Compile Include="Helpers\Observable.cs" />
     <Compile Include="Helpers\RelayCommand.cs" />
     <Compile Include="Models\ClientState.cs" />
     <Compile Include="Models\ClientStates.cs" />

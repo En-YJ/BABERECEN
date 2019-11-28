@@ -15,7 +15,7 @@
 
   <rule id="playAction">
     <one-of>
-      <item> baby </item>
+      <item> blah blah </item>
       <item> ok baby </item>
       <item> hey baby </item>
     </one-of>

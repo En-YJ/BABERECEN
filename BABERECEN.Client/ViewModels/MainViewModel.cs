@@ -28,9 +28,6 @@ using Amazon.Polly;
 using Amazon;
 using Amazon.Polly.Model;
 using System.Net;
-using System.Net.Http.Headers;
-using System.Net.Http;
-using BABERECEN.Client.Authentications;
 
 namespace BABERECEN.Client.ViewModels
 {

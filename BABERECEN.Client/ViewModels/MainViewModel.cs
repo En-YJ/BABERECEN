@@ -132,7 +132,7 @@ namespace BABERECEN.Client.ViewModels
             //음성 인식 초기화 - 한글을 지원하지 않기 때문에 영문으로 인식하도록 함
             var supportedLanguages = SpeechRecognizer.SupportedGrammarLanguages;
             var enUS = supportedLanguages.FirstOrDefault(p => p.LanguageTag == "en-US")
-                       ?? SpeechRecognizer.SystemSpeechLanguage;
+                       ?? SpeechRecognizer.SystemSpeechLanguage; 
             await InitializeRecognizerAsync(enUS);
 
             _threeSecondsObservable = System.Reactive.Linq.Observable.Timer(TimeSpan.FromSeconds(3));

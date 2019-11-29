@@ -6,7 +6,9 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Amazon.Runtime.Internal.Util;
 using Microsoft.Bot.Builder;
+using Microsoft.Bot.Builder.Dialogs;
 using Microsoft.Bot.Schema;
 
 namespace BABERECEN.Bots
@@ -24,7 +26,7 @@ namespace BABERECEN.Bots
             {
                 if (member.Id != turnContext.Activity.Recipient.Id)
                 {
-                    //await turnContext.SendActivityAsync(CreateActivityWithTextAndSpeak($"Hello and welcome!"), cancellationToken);
+                    await turnContext.SendActivityAsync(CreateActivityWithTextAndSpeak($"Hello and welcome!"), cancellationToken);
                 }
             }
         }

@@ -196,7 +196,7 @@ namespace BABERECEN.Client.ViewModels
                             Debug.WriteLine($"StopSystemVoice {DateTime.Now:O}");
                             Dialogs.Add(new Activity()
                             {
-                                Text = "[System Message] Stop System Voice"
+                                Text = "[System Message] Speak Please"
                             });
                             RecodingVoice();
                             break;
@@ -512,7 +512,7 @@ namespace BABERECEN.Client.ViewModels
             }
             else
             {
-                //Dialogs.Add(userMessage);
+                Dialogs.Add(userMessage);
                 await _botClient.Conversations.PostActivityAsync(_conversation.ConversationId, userMessage);
             }
 
@@ -546,7 +546,7 @@ namespace BABERECEN.Client.ViewModels
                     if (_isConversation == false || _isRecoding == false) return;
 
                     //여기 지워지면 잘 될 것 같음
-                    _isRecoding = false;
+                    //_isRecoding = false;
                     await Singleton<MicrophoneHelper>.Instance.StopRecordingAsync();
                     OnClientStateChanging(ClientStates.StopRecoding, _recodingFileName);
                 });

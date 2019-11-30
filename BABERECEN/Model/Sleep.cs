@@ -11,5 +11,6 @@ namespace BABERECEN.Model
         public DateTime start_time { get; set; }
         public DateTime end_time { get; set; }
         public int sleep_time { get; set; } // 분 단위
+        public string special { get; set; }
     }
 }

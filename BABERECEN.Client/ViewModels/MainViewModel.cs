@@ -391,8 +391,8 @@ namespace BABERECEN.Client.ViewModels
                     {
                         Text = $"<speak>{activity.Text}</speak>",
                         OutputFormat = OutputFormat.Mp3,
-                        VoiceId = VoiceId.Seoyeon,
-                        LanguageCode = "en-GB",
+                        VoiceId = VoiceId.Joanna,
+                        LanguageCode = "en-US",
                         TextType = TextType.Ssml
                     };
 
@@ -544,6 +544,8 @@ namespace BABERECEN.Client.ViewModels
                 {
                     //대화시작이 않되었거나 레코딩 중이 아니라면 레코딩 종료를 하지 않음
                     if (_isConversation == false || _isRecoding == false) return;
+
+                    //여기 지워지면 잘 될 것 같음
                     _isRecoding = false;
                     await Singleton<MicrophoneHelper>.Instance.StopRecordingAsync();
                     OnClientStateChanging(ClientStates.StopRecoding, _recodingFileName);

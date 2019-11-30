@@ -8,6 +8,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="s\**" />
+    <Content Remove="s\**" />
+    <EmbeddedResource Remove="s\**" />
+    <None Remove="s\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="AWSSDK.Core" Version="3.3.103.68" />
     <PackageReference Include="AWSSDK.Polly" Version="3.3.103.14" />
     <PackageReference Include="Microsoft.AspNetCore.App" />
@@ -28,9 +35,5 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
-
-    <ItemGroup>
-      <Folder Include="CognitiveModels\" />
-    </ItemGroup>
 
 </Project>

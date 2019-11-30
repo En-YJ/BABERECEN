@@ -392,8 +392,8 @@ namespace BABERECEN.Client.ViewModels
                     {
                         Text = $"<speak>{activity.Text}</speak>",
                         OutputFormat = OutputFormat.Mp3,
-                        VoiceId = VoiceId.Seoyeon,
-                        LanguageCode = "ko-KR",
+                        VoiceId = VoiceId.Joanna,
+                        LanguageCode = "en-US",
                         TextType = TextType.Ssml
                     };
 
